@@ -69,15 +69,6 @@ If you need to run the API project directly (for debugging, testing, etc.), you 
    dotnet run
    ```
 
-### Security Notes
-
-**IMPORTANT:**
-- NEVER commit database credentials to git
-- Use User Secrets for local development
-- Use environment variables for production deployments
-- The `appsettings.Development.json` file should NOT contain connection strings
-- User Secrets are stored at: `%APPDATA%\Microsoft\UserSecrets\<user_secrets_id>\secrets.json`
-
 ### Testing the API
 
 Once running, you can test the endpoints:
@@ -115,10 +106,3 @@ curl http://localhost:5000/api/quantum-greetings
 - Result Pattern
 - Snapshot Pattern
 
-## Next Steps
-
-This is a starter template with a "Hello Quantum World" feature. You can now:
-1. Implement your real domain models
-2. Add business rules and validations
-3. Create comprehensive tests
-4. Add more commands and queries
