@@ -22,7 +22,7 @@ Use quantum amplitude encoding to classify tissue types based on HU values (bone
 ## Technologies
 
 - .NET 10
-- Wolverine (CQRS message handling)
+- Wolverine (mediator + message handling)
 - EF Core 10 + PostgreSQL (Write-Side)
 - Dapper (Read-Side)
 - Aspire (orchestration)
