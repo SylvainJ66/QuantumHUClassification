@@ -5,6 +5,9 @@ using SharedKernel.Domain;
 
 namespace ExtractHUContext.WriteSide.Domain.CommandHandlers.UploadMedicalStudy;
 
+/// <summary>
+/// UseCase for uploading a medical study file and creating the corresponding medical study record.
+/// </summary>
 public static class UploadMedicalStudyHandler
 {
     public static async Task<Result> Handle(
@@ -13,20 +16,41 @@ public static class UploadMedicalStudyHandler
         IMedicalStudyRepository medicalStudyRepository,
         IDateTimeProvider dateTimeProvider)
     {
-        // Step 1: Generate storage key
-        var storageKey = $"studies/{command.StudyId}/{command.StudyId}.zip";
+        var storageKey = BuildStorageKey(command);
 
-        // Step 2: Upload file to MinIO
-        var uploadResult = await fileStorageService.UploadFile(
+        var uploadResult = await UploadFileToBucket(command, fileStorageService, storageKey);
+        
+        if (!uploadResult.IsSuccess)
+            return Result.Failure(uploadResult.Error);
+
+        var createStudyResult = CreateMedicalStudy(command, dateTimeProvider, storageKey);
+        
+        if (!createStudyResult.IsSuccess)
+            return Result.Failure(createStudyResult.Error);
+
+        await PersistMedicalStudy(medicalStudyRepository, createStudyResult);
+
+        return Result.Success();
+    }
+
+    private static string BuildStorageKey(
+        UploadMedicalStudyCommand command) 
+        => $"studies/{command.StudyId}/{command.StudyId}.zip";
+
+    private static async Task<Result<string>> UploadFileToBucket(
+        UploadMedicalStudyCommand command,
+        IFileStorageService fileStorageService,
+        string storageKey) 
+        => await fileStorageService.UploadFile(
             storageKey,
             command.FileStream,
             command.ContentType);
 
-        if (!uploadResult.IsSuccess)
-            return Result.Failure(uploadResult.Error);
-
-        // Step 3: Create domain model
-        var createStudyResult = MedicalStudy.Create(
+    private static Result<MedicalStudy> CreateMedicalStudy(
+        UploadMedicalStudyCommand command,
+        IDateTimeProvider dateTimeProvider,
+        string storageKey) 
+        => MedicalStudy.Create(
             command.StudyId,
             command.FileName,
             command.ContentType,
@@ -34,13 +58,8 @@ public static class UploadMedicalStudyHandler
             storageKey,
             dateTimeProvider);
 
-        if (!createStudyResult.IsSuccess)
-            return Result.Failure(createStudyResult.Error);
-
-        // Step 4: Save to database
-        // If this fails, file remains in MinIO (no compensation as per requirement)
-        await medicalStudyRepository.Save(createStudyResult.Value);
-
-        return Result.Success();
-    }
+    private static async Task PersistMedicalStudy(
+        IMedicalStudyRepository medicalStudyRepository,
+        Result<MedicalStudy> createStudyResult) 
+        => await medicalStudyRepository.Save(createStudyResult.Value);
 }
