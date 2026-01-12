@@ -2,13 +2,22 @@
 
 A .NET 10 C# project implementing CQRS with Domain-Driven Design, following hexagonal architecture patterns.
 
+## What is HU (Hounsfield Units) ?
+
+HU is a standardized scale that measures the **radiological density** of tissues in a CT scan. 
+It is the unit of measurement for pixels in a CT image.
+
+## What does this project do ?
+
+Use quantum amplitude encoding to classify tissue types based on HU values (bones, soft tissues, air, etc)
+
 ## Project Structure
 
 - **SharedKernel**: Common infrastructure (Result pattern, IDateTimeProvider)
-- **QuantumHUContext.WriteSide**: Command handling with EF Core
-- **QuantumHUContext.ReadSide**: Query handling with Dapper
-- **QuantumHUContext.Api**: API layer with Wolverine
+- **ExtractHUContext.WriteSide**: Context to extract HU from study.
+- **QuantumHUContext.Api**: API for all contexts.
 - **QuantumHUClassification.AppHost**: Aspire orchestration
+- Wip: Q#
 
 ## Technologies
 
@@ -17,6 +26,7 @@ A .NET 10 C# project implementing CQRS with Domain-Driven Design, following hexa
 - EF Core 10 + PostgreSQL (Write-Side)
 - Dapper (Read-Side)
 - Aspire (orchestration)
+- Q#
 
 ## Getting Started
 
@@ -69,15 +79,6 @@ If you need to run the API project directly (for debugging, testing, etc.), you 
    dotnet run
    ```
 
-### Security Notes
-
-**IMPORTANT:**
-- NEVER commit database credentials to git
-- Use User Secrets for local development
-- Use environment variables for production deployments
-- The `appsettings.Development.json` file should NOT contain connection strings
-- User Secrets are stored at: `%APPDATA%\Microsoft\UserSecrets\<user_secrets_id>\secrets.json`
-
 ### Testing the API
 
 Once running, you can test the endpoints:
@@ -115,10 +116,3 @@ curl http://localhost:5000/api/quantum-greetings
 - Result Pattern
 - Snapshot Pattern
 
-## Next Steps
-
-This is a starter template with a "Hello Quantum World" feature. You can now:
-1. Implement your real domain models
-2. Add business rules and validations
-3. Create comprehensive tests
-4. Add more commands and queries
