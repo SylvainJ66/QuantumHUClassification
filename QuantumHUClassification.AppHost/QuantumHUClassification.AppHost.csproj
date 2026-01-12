@@ -1,7 +1,7 @@
 <Project Sdk="Aspire.AppHost.Sdk/13.1.0">
 
   <ItemGroup>
-    <ProjectReference Include="..\QuantumHUContext.Api\QuantumHUContext.Api.csproj" />
+    <ProjectReference Include="..\QuantumHUClassification.Api\QuantumHUClassification.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup>

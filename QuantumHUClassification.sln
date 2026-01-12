@@ -15,31 +15,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Write-Side", "Write-Side", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{DB380E80-5C07-00EE-F545-2A3ECFCB2AB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.WriteSide.Domain", "QuantumHUContext\Write-Side\Src\ExtractHUContext.WriteSide.Domain\ExtractHUContext.WriteSide.Domain.csproj", "{9D755BCA-8FA8-458B-A86A-706DA057D5C5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.WriteSide.Domain", "ExtractHUContext\Write-Side\Src\ExtractHUContext.WriteSide.Domain\ExtractHUContext.WriteSide.Domain.csproj", "{9D755BCA-8FA8-458B-A86A-706DA057D5C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.WriteSide.Infrastructure", "QuantumHUContext\Write-Side\Src\ExtractHUContext.WriteSide.Infrastructure\ExtractHUContext.WriteSide.Infrastructure.csproj", "{AC06F95C-D119-4174-BF0E-D99A4A86BADB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.WriteSide.Infrastructure", "ExtractHUContext\Write-Side\Src\ExtractHUContext.WriteSide.Infrastructure\ExtractHUContext.WriteSide.Infrastructure.csproj", "{AC06F95C-D119-4174-BF0E-D99A4A86BADB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Read-Side", "Read-Side", "{26AC8FEF-26EE-9E99-EB62-07FF7AF8D00C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{AA6318C1-A820-564A-B38F-82BAA89F07B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.ReadSide.Domain", "QuantumHUContext\Read-Side\Src\ExtractHUContext.ReadSide.Domain\ExtractHUContext.ReadSide.Domain.csproj", "{5EAAAF10-00C8-4F9C-BFD6-06380E2EF46F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.ReadSide.Domain", "ExtractHUContext\Read-Side\Src\ExtractHUContext.ReadSide.Domain\ExtractHUContext.ReadSide.Domain.csproj", "{5EAAAF10-00C8-4F9C-BFD6-06380E2EF46F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.ReadSide.Infrastructure", "QuantumHUContext\Read-Side\Src\ExtractHUContext.ReadSide.Infrastructure\ExtractHUContext.ReadSide.Infrastructure.csproj", "{5BE51AFB-3DA7-4B40-899E-FA2F94B645C0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.ReadSide.Infrastructure", "ExtractHUContext\Read-Side\Src\ExtractHUContext.ReadSide.Infrastructure\ExtractHUContext.ReadSide.Infrastructure.csproj", "{5BE51AFB-3DA7-4B40-899E-FA2F94B645C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FF00D769-08E7-A851-DD77-2DB1597EED18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.WriteSide.Domain.Tests", "QuantumHUContext\Write-Side\Tests\ExtractHUContext.WriteSide.Domain.Tests\ExtractHUContext.WriteSide.Domain.Tests.csproj", "{0F613D34-3A05-4C47-96D7-A13FBF8113C1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.WriteSide.Domain.Tests", "ExtractHUContext\Write-Side\Tests\ExtractHUContext.WriteSide.Domain.Tests\ExtractHUContext.WriteSide.Domain.Tests.csproj", "{0F613D34-3A05-4C47-96D7-A13FBF8113C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.WriteSide.Infrastructure.Tests", "QuantumHUContext\Write-Side\Tests\ExtractHUContext.WriteSide.Infrastructure.Tests\ExtractHUContext.WriteSide.Infrastructure.Tests.csproj", "{25E197E4-68BF-44C0-AAB5-3F7F62039D48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.WriteSide.Infrastructure.Tests", "ExtractHUContext\Write-Side\Tests\ExtractHUContext.WriteSide.Infrastructure.Tests\ExtractHUContext.WriteSide.Infrastructure.Tests.csproj", "{25E197E4-68BF-44C0-AAB5-3F7F62039D48}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3FA29B9D-EB89-86AB-962A-1981EB605959}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.ReadSide.Domain.Tests", "QuantumHUContext\Read-Side\Tests\ExtractHUContext.ReadSide.Domain.Tests\ExtractHUContext.ReadSide.Domain.Tests.csproj", "{E766580B-5063-452D-9159-B7DE5EE7A50F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.ReadSide.Domain.Tests", "ExtractHUContext\Read-Side\Tests\ExtractHUContext.ReadSide.Domain.Tests\ExtractHUContext.ReadSide.Domain.Tests.csproj", "{E766580B-5063-452D-9159-B7DE5EE7A50F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.ReadSide.Infrastructure.Tests", "QuantumHUContext\Read-Side\Tests\ExtractHUContext.ReadSide.Infrastructure.Tests\ExtractHUContext.ReadSide.Infrastructure.Tests.csproj", "{3F4CAF99-9ACD-47BC-AEE9-33CEB2A9FE0A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtractHUContext.ReadSide.Infrastructure.Tests", "ExtractHUContext\Read-Side\Tests\ExtractHUContext.ReadSide.Infrastructure.Tests\ExtractHUContext.ReadSide.Infrastructure.Tests.csproj", "{3F4CAF99-9ACD-47BC-AEE9-33CEB2A9FE0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuantumHUContext.Api", "QuantumHUContext.Api\QuantumHUContext.Api.csproj", "{80F2789F-C3B0-4DD1-95D7-56E053C19339}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuantumHUClassification.Api", "QuantumHUClassification.Api\QuantumHUClassification.Api.csproj", "{80F2789F-C3B0-4DD1-95D7-56E053C19339}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuantumHUClassification.AppHost", "QuantumHUClassification.AppHost\QuantumHUClassification.AppHost.csproj", "{6E34FA7C-3355-402D-9880-B5A91715BF80}"
 EndProject

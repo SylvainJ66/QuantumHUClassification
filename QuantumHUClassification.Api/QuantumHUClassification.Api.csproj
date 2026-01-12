@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <UserSecretsId>e4df60ac-2e2d-4782-93ca-15357727f965</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.1" />
+    <PackageReference Include="Minio" Version="7.0.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="1.2.48" />
+    <PackageReference Include="WolverineFx.EntityFrameworkCore" Version="5.9.2" />
+    <PackageReference Include="WolverineFx.Http" Version="5.9.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ExtractHUContext\Write-Side\Src\ExtractHUContext.WriteSide.Infrastructure\ExtractHUContext.WriteSide.Infrastructure.csproj" />
+    <ProjectReference Include="..\ExtractHUContext\Read-Side\Src\ExtractHUContext.ReadSide.Infrastructure\ExtractHUContext.ReadSide.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
