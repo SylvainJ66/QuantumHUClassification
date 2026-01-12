@@ -6,8 +6,6 @@ namespace ExtractHUContext.ReadSide.Domain.QueryHandlers.GetAllQuantumGreetings;
 public static class GetAllQuantumGreetingsHandler
 {
     public static Task<IEnumerable<QuantumGreetingReadModel>> Handle(
-        IGetAllQuantumGreetingsQuery queryImpl)
-    {
-        return queryImpl.Execute();
-    }
+        IGetAllQuantumGreetingsQuery queryImpl) 
+        => queryImpl.Execute();
 }

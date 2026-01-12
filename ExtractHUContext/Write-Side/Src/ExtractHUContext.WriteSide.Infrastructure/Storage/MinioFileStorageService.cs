@@ -69,6 +69,16 @@ public class MinioFileStorageService : IFileStorageService
     {
         try
         {
+            var bucketExists = await _minioClient.BucketExistsAsync(
+                new BucketExistsArgs().WithBucket(_options.BucketName),
+                cancellationToken);
+
+            if (!bucketExists)
+            {
+                _logger.LogInformation("Bucket does not exist, treating delete as successful: {ObjectKey}", objectKey);
+                return Result.Success();
+            }
+
             await _minioClient.RemoveObjectAsync(
                 new RemoveObjectArgs()
                     .WithBucket(_options.BucketName)
