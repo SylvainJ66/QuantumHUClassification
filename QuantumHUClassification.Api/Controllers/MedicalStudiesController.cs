@@ -1,14 +1,17 @@
 using System.ComponentModel.DataAnnotations;
+using ExtractHUContext.ReadSide.Domain.QueryHandlers.GetAllMedicalStudies.Queries;
+using ExtractHUContext.ReadSide.Domain.ReadModels;
 using ExtractHUContext.WriteSide.Domain.CommandHandlers.UploadMedicalStudy;
 using ExtractHUContext.WriteSide.Domain.CommandHandlers.UploadMedicalStudy.Commands;
 using ExtractHUContext.WriteSide.Domain.Ports;
 using Microsoft.AspNetCore.Mvc;
 using SharedKernel.Domain;
+using Wolverine;
 
 namespace QuantumHUClassification.Api.Controllers;
 
 /// <summary>
-/// Manages Medical Studies using CQRS pattern
+/// Manages Medical Studies
 /// </summary>
 /// <remarks>
 /// Note: File upload operations bypass Wolverine message bus since Stream objects
@@ -22,17 +25,20 @@ public class MedicalStudiesController : ControllerBase
     private readonly IFileStorageService _fileStorageService;
     private readonly IMedicalStudyRepository _medicalStudyRepository;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IMessageBus _messageBus;
     private readonly ILogger<MedicalStudiesController> _logger;
 
     public MedicalStudiesController(
         IFileStorageService fileStorageService,
         IMedicalStudyRepository medicalStudyRepository,
         IDateTimeProvider dateTimeProvider,
+        IMessageBus messageBus,
         ILogger<MedicalStudiesController> logger)
     {
         _fileStorageService = fileStorageService;
         _medicalStudyRepository = medicalStudyRepository;
         _dateTimeProvider = dateTimeProvider;
+        _messageBus = messageBus;
         _logger = logger;
     }
 
@@ -88,6 +94,21 @@ public class MedicalStudiesController : ControllerBase
             if (fileStream != null)
                 await fileStream.DisposeAsync();
         }
+    }
+
+    /// <summary>
+    /// Retrieves all medical studies
+    /// </summary>
+    /// <returns>A list of all medical studies ordered by upload date (newest first)</returns>
+    /// <response code="200">Returns the list of medical studies</response>
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<MedicalStudyReadModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllStudies()
+    {
+        var query = new GetAllMedicalStudiesQuery();
+        var result = await _messageBus.InvokeAsync<IEnumerable<MedicalStudyReadModel>>(query);
+
+        return Ok(result);
     }
 }
 

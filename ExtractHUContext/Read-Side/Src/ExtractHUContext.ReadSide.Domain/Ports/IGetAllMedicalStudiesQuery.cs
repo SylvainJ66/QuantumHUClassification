@@ -2,7 +2,7 @@ using ExtractHUContext.ReadSide.Domain.ReadModels;
 
 namespace ExtractHUContext.ReadSide.Domain.Ports;
 
-public interface IGetAllQuantumGreetingsQuery
+public interface IGetAllMedicalStudiesQuery
 {
-    Task<IEnumerable<QuantumGreetingReadModel>> Execute();
+    Task<IEnumerable<MedicalStudyReadModel>> Execute();
 }

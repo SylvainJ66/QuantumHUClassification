@@ -23,10 +23,11 @@ public class UploadMedicalStudyHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WithValidCommand_ShouldSucceed()
+    public async Task Handle_WithValidCommand_ShouldSucceedAndPersistCorrectly()
     {
         var studyId = Guid.NewGuid();
         var command = CreateValidCommand(studyId);
+        var expectedStorageKey = $"studies/{studyId}/{studyId}.zip";
 
         var result = await UploadMedicalStudyHandler.Handle(
             command,
@@ -34,55 +35,30 @@ public class UploadMedicalStudyHandlerTests
             _repository,
             _dateTimeProvider);
 
+        // Verify success
         result.IsSuccess.Should().BeTrue();
-    }
 
-    [Fact]
-    public async Task Handle_WithValidCommand_ShouldUploadFileToStorage()
-    {
-        var studyId = Guid.NewGuid();
-        var command = CreateValidCommand(studyId);
-        var expectedStorageKey = $"studies/{studyId}/{studyId}.zip";
-
-        await UploadMedicalStudyHandler.Handle(
-            command,
-            _fileStorageService,
-            _repository,
-            _dateTimeProvider);
-
+        // Verify file uploaded to storage
         _fileStorageService.UploadFileCalls.Should().HaveCount(1);
         var uploadCall = _fileStorageService.UploadFileCalls[0];
         uploadCall.ObjectKey.Should().Be(expectedStorageKey);
         uploadCall.FileStream.Should().BeSameAs(command.FileStream);
         uploadCall.ContentType.Should().Be(command.ContentType);
-    }
 
-    [Fact]
-    public async Task Handle_WithValidCommand_ShouldSaveMedicalStudyToRepository()
-    {
-        var studyId = Guid.NewGuid();
-        var command = CreateValidCommand(studyId);
-
-        await UploadMedicalStudyHandler.Handle(
-            command,
-            _fileStorageService,
-            _repository,
-            _dateTimeProvider);
-
+        // Verify study saved to repository
         _repository.SavedStudies.Should().HaveCount(1);
         var savedStudy = _repository.SavedStudies[0];
         var snapshot = savedStudy.ToSnapshot();
-
         snapshot.Id.Should().Be(studyId);
         snapshot.FileName.Should().Be(command.FileName);
         snapshot.ContentType.Should().Be(command.ContentType);
         snapshot.FileSizeBytes.Should().Be(command.FileSizeBytes);
-        snapshot.StorageKey.Should().Be($"studies/{studyId}/{studyId}.zip");
+        snapshot.StorageKey.Should().Be(expectedStorageKey);
         snapshot.UploadDate.Should().Be(_fixedDate);
     }
 
     [Fact]
-    public async Task Handle_WhenFileStorageFails_ShouldReturnFailure()
+    public async Task Handle_WhenFileStorageFails_ShouldFailAndNotSaveToRepository()
     {
         var command = CreateValidCommand();
         var storageError = "Storage service unavailable";
@@ -94,29 +70,21 @@ public class UploadMedicalStudyHandlerTests
             _repository,
             _dateTimeProvider);
 
+        // Verify failure
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(storageError);
-    }
 
-    [Fact]
-    public async Task Handle_WhenFileStorageFails_ShouldNotSaveToRepository()
-    {
-        var command = CreateValidCommand();
-        _fileStorageService.SetUploadFileResult(Result.Failure<string>("Storage error"));
-
-        await UploadMedicalStudyHandler.Handle(
-            command,
-            _fileStorageService,
-            _repository,
-            _dateTimeProvider);
-
+        // Verify nothing saved to repository
         _repository.SavedStudies.Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task Handle_WithEmptyFileName_ShouldReturnFailure()
+    [Theory]
+    [InlineData("", "File name cannot be empty")]
+    [InlineData("   ", "File name cannot be empty")]
+    [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.zip", "File name cannot exceed 255 characters")]
+    public async Task Handle_WithInvalidFileName_ShouldReturnFailure(string fileName, string expectedError)
     {
-        var command = CreateValidCommand() with { FileName = "" };
+        var command = CreateValidCommand() with { FileName = fileName };
 
         var result = await UploadMedicalStudyHandler.Handle(
             command,
@@ -125,13 +93,17 @@ public class UploadMedicalStudyHandlerTests
             _dateTimeProvider);
 
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("File name cannot be empty");
+        result.Error.Should().Be(expectedError);
+        _repository.SavedStudies.Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task Handle_WithWhitespaceFileName_ShouldReturnFailure()
+    [Theory]
+    [InlineData(0, "File size must be greater than 0")]
+    [InlineData(-100, "File size must be greater than 0")]
+    [InlineData(524288001, "File size cannot exceed 500 MB")] // 500MB + 1
+    public async Task Handle_WithInvalidFileSize_ShouldReturnFailure(long fileSize, string expectedError)
     {
-        var command = CreateValidCommand() with { FileName = "   " };
+        var command = CreateValidCommand() with { FileSizeBytes = fileSize };
 
         var result = await UploadMedicalStudyHandler.Handle(
             command,
@@ -140,69 +112,8 @@ public class UploadMedicalStudyHandlerTests
             _dateTimeProvider);
 
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("File name cannot be empty");
-    }
-
-    [Fact]
-    public async Task Handle_WithFileNameTooLong_ShouldReturnFailure()
-    {
-        var longFileName = new string('a', 256) + ".zip";
-        var command = CreateValidCommand() with { FileName = longFileName };
-
-        var result = await UploadMedicalStudyHandler.Handle(
-            command,
-            _fileStorageService,
-            _repository,
-            _dateTimeProvider);
-
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("File name cannot exceed 255 characters");
-    }
-
-    [Fact]
-    public async Task Handle_WithZeroFileSize_ShouldReturnFailure()
-    {
-        var command = CreateValidCommand() with { FileSizeBytes = 0 };
-
-        var result = await UploadMedicalStudyHandler.Handle(
-            command,
-            _fileStorageService,
-            _repository,
-            _dateTimeProvider);
-
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("File size must be greater than 0");
-    }
-
-    [Fact]
-    public async Task Handle_WithNegativeFileSize_ShouldReturnFailure()
-    {
-        var command = CreateValidCommand() with { FileSizeBytes = -100 };
-
-        var result = await UploadMedicalStudyHandler.Handle(
-            command,
-            _fileStorageService,
-            _repository,
-            _dateTimeProvider);
-
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("File size must be greater than 0");
-    }
-
-    [Fact]
-    public async Task Handle_WithFileSizeExceeding500MB_ShouldReturnFailure()
-    {
-        var fileSizeOver500MB = (500 * 1024 * 1024) + 1;
-        var command = CreateValidCommand() with { FileSizeBytes = fileSizeOver500MB };
-
-        var result = await UploadMedicalStudyHandler.Handle(
-            command,
-            _fileStorageService,
-            _repository,
-            _dateTimeProvider);
-
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("File size cannot exceed 500 MB");
+        result.Error.Should().Be(expectedError);
+        _repository.SavedStudies.Should().BeEmpty();
     }
 
     [Fact]
@@ -218,20 +129,6 @@ public class UploadMedicalStudyHandlerTests
             _dateTimeProvider);
 
         result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task Handle_WhenDomainValidationFails_ShouldNotSaveToRepository()
-    {
-        var command = CreateValidCommand() with { FileName = "" };
-
-        await UploadMedicalStudyHandler.Handle(
-            command,
-            _fileStorageService,
-            _repository,
-            _dateTimeProvider);
-
-        _repository.SavedStudies.Should().BeEmpty();
     }
 
     [Fact]

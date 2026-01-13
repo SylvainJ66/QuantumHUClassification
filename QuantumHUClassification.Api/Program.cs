@@ -1,6 +1,5 @@
 using ExtractHUContext.ReadSide.Domain.Ports;
-using ExtractHUContext.ReadSide.Domain.QueryHandlers.GetAllQuantumGreetings;
-using ExtractHUContext.WriteSide.Domain.CommandHandlers.CreateQuantumGreeting;
+using ExtractHUContext.ReadSide.Domain.QueryHandlers.GetAllMedicalStudies;
 using ExtractHUContext.WriteSide.Domain.CommandHandlers.UploadMedicalStudy;
 using ExtractHUContext.WriteSide.Domain.Ports;
 using ExtractHUContext.WriteSide.Infrastructure.Persistence;
@@ -27,7 +26,7 @@ builder.Services.AddOpenApi(options =>
         {
             Title = "Quantum HU Classification API",
             Version = "v1",
-            Description = "API for managing Quantum Greetings using CQRS pattern with Wolverine message bus"
+            Description = "API for managing Medical Studies using CQRS pattern with Wolverine message bus"
         };
         return Task.CompletedTask;
     });
@@ -46,14 +45,13 @@ var connectionString = builder.Configuration.GetConnectionString("Database")
 builder.Services.AddDbContext<QuantumHUDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddScoped<IQuantumGreetingRepository, EfQuantumGreetingRepository>();
 builder.Services.AddScoped<IMedicalStudyRepository, EfMedicalStudyRepository>();
 
 // Read-Side Infrastructure
 builder.Services.AddSingleton<IDbConnectionFactory>(sp =>
     new NpgsqlConnectionFactory(connectionString));
 
-builder.Services.AddScoped<IGetAllQuantumGreetingsQuery, SqlGetAllQuantumGreetingsQuery>();
+builder.Services.AddScoped<IGetAllMedicalStudiesQuery, SqlGetAllMedicalStudiesQuery>();
 
 // SharedKernel services
 builder.Services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
@@ -80,11 +78,8 @@ builder.Services.AddScoped<IFileStorageService, MinioFileStorageService>();
 // Configure Wolverine
 builder.Host.UseWolverine(opts =>
 {
-    // Disable automatic assembly scanning to prevent issues with build-time assemblies
-    opts.Discovery.DisableConventionalDiscovery();
-
-    opts.Discovery.IncludeAssembly(typeof(CreateQuantumGreetingHandler).Assembly);
-    opts.Discovery.IncludeAssembly(typeof(GetAllQuantumGreetingsHandler).Assembly);
+    // Include assemblies for Wolverine handler discovery
+    opts.Discovery.IncludeAssembly(typeof(GetAllMedicalStudiesHandler).Assembly);
 });
 
 var app = builder.Build();

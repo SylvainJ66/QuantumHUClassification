@@ -1,5 +1,4 @@
 using ExtractHUContext.WriteSide.Infrastructure.Persistence.Ef;
-using ExtractHUContext.WriteSide.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExtractHUContext.WriteSide.Infrastructure.Persistence;
@@ -11,7 +10,6 @@ public class QuantumHUDbContext : DbContext
     {
     }
 
-    public DbSet<QuantumGreetingEf> QuantumGreetings => Set<QuantumGreetingEf>();
     public DbSet<MedicalStudyEf> MedicalStudies => Set<MedicalStudyEf>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

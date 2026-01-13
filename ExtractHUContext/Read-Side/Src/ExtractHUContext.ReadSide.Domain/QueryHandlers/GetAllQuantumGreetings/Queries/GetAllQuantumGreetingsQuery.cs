@@ -1,3 +1,0 @@
-namespace ExtractHUContext.ReadSide.Domain.QueryHandlers.GetAllQuantumGreetings.Queries;
-
-public record GetAllQuantumGreetingsQuery;

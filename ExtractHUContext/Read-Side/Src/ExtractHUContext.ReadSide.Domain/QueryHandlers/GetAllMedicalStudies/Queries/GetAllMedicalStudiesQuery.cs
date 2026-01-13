@@ -1,0 +1,3 @@
+namespace ExtractHUContext.ReadSide.Domain.QueryHandlers.GetAllMedicalStudies.Queries;
+
+public record GetAllMedicalStudiesQuery;
