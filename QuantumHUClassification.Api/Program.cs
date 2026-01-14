@@ -1,12 +1,14 @@
 using ExtractHUContext.ReadSide.Domain.Ports;
 using ExtractHUContext.ReadSide.Domain.QueryHandlers.GetAllMedicalStudies;
-using ExtractHUContext.WriteSide.Domain.CommandHandlers.UploadMedicalStudy;
+using ExtractHUContext.WriteSide.Domain.CommandHandlers.ExtractHUFromStudy;
 using ExtractHUContext.WriteSide.Domain.Ports;
+using ExtractHUContext.WriteSide.Infrastructure.Extraction;
 using ExtractHUContext.WriteSide.Infrastructure.Persistence;
 using ExtractHUContext.WriteSide.Infrastructure.Persistence.Repositories;
 using ExtractHUContext.WriteSide.Infrastructure.Storage;
 using ExtractHUContext.ReadSide.Infrastructure.Queries;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi;
 using Minio;
 using Scalar.AspNetCore;
 using SharedKernel.Domain;
@@ -20,9 +22,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi(options =>
 {
-    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    options.AddDocumentTransformer((document, _, _) =>
     {
-        document.Info = new()
+        document.Info = new OpenApiInfo
         {
             Title = "Quantum HU Classification API",
             Version = "v1",
@@ -48,7 +50,7 @@ builder.Services.AddDbContext<QuantumHUDbContext>(options =>
 builder.Services.AddScoped<IMedicalStudyRepository, EfMedicalStudyRepository>();
 
 // Read-Side Infrastructure
-builder.Services.AddSingleton<IDbConnectionFactory>(sp =>
+builder.Services.AddSingleton<IDbConnectionFactory>(_ =>
     new NpgsqlConnectionFactory(connectionString));
 
 builder.Services.AddScoped<IGetAllMedicalStudiesQuery, SqlGetAllMedicalStudiesQuery>();
@@ -74,12 +76,14 @@ builder.Services.AddMinio(configureClient => configureClient
     .WithSSL(minioOptions.UseSSL));
 
 builder.Services.AddScoped<IFileStorageService, MinioFileStorageService>();
+builder.Services.AddScoped<IHuExtractionService, DicomHuExtractionService>();
 
 // Configure Wolverine
 builder.Host.UseWolverine(opts =>
 {
     // Include assemblies for Wolverine handler discovery
     opts.Discovery.IncludeAssembly(typeof(GetAllMedicalStudiesHandler).Assembly);
+    opts.Discovery.IncludeAssembly(typeof(ExtractHuFromStudyHandler).Assembly);
 });
 
 var app = builder.Build();

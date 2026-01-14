@@ -1,8 +1,8 @@
 using ExtractHUContext.WriteSide.Domain.Models;
 using ExtractHUContext.WriteSide.Domain.Models.Snapshots;
+using ExtractHUContext.WriteSide.Domain.Models.ValueObjects;
 using ExtractHUContext.WriteSide.Domain.Ports;
 using ExtractHUContext.WriteSide.Infrastructure.Persistence.Ef;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExtractHUContext.WriteSide.Infrastructure.Persistence.Repositories;
 
@@ -32,7 +32,16 @@ public class EfMedicalStudyRepository : IMedicalStudyRepository
                 FileName = snapshot.FileName,
                 ContentType = snapshot.ContentType,
                 FileSizeBytes = snapshot.FileSizeBytes,
-                StorageKey = snapshot.StorageKey
+                StorageKey = snapshot.StorageKey,
+                ExtractionStatus = (int)snapshot.ExtractionStatus,
+                ExtractionStartedAt = snapshot.ExtractionStartedAt,
+                ExtractionCompletedAt = snapshot.ExtractionCompletedAt,
+                MeanHu = snapshot.HuStatistics?.MeanHu,
+                MinHu = snapshot.HuStatistics?.MinHu,
+                MaxHu = snapshot.HuStatistics?.MaxHu,
+                StandardDeviation = snapshot.HuStatistics?.StandardDeviation,
+                VoxelCount = snapshot.HuStatistics?.VoxelCount,
+                ExtractionError = snapshot.ExtractionError
             };
 
             await _dbContext.MedicalStudies.AddAsync(entity);
@@ -45,6 +54,15 @@ public class EfMedicalStudyRepository : IMedicalStudyRepository
             entity.ContentType = snapshot.ContentType;
             entity.FileSizeBytes = snapshot.FileSizeBytes;
             entity.StorageKey = snapshot.StorageKey;
+            entity.ExtractionStatus = (int)snapshot.ExtractionStatus;
+            entity.ExtractionStartedAt = snapshot.ExtractionStartedAt;
+            entity.ExtractionCompletedAt = snapshot.ExtractionCompletedAt;
+            entity.MeanHu = snapshot.HuStatistics?.MeanHu;
+            entity.MinHu = snapshot.HuStatistics?.MinHu;
+            entity.MaxHu = snapshot.HuStatistics?.MaxHu;
+            entity.StandardDeviation = snapshot.HuStatistics?.StandardDeviation;
+            entity.VoxelCount = snapshot.HuStatistics?.VoxelCount;
+            entity.ExtractionError = snapshot.ExtractionError;
         }
 
         await _dbContext.SaveChangesAsync();
@@ -58,13 +76,36 @@ public class EfMedicalStudyRepository : IMedicalStudyRepository
         if (entity == null)
             return null;
 
+        HuStatistics? huStatistics = null;
+        if (entity is
+            {
+                MeanHu: not null,
+                MinHu: not null,
+                MaxHu: not null,
+                StandardDeviation: not null,
+                VoxelCount: not null
+            })
+        {
+            huStatistics = HuStatistics.Create(
+                entity.MeanHu.Value,
+                entity.MinHu.Value,
+                entity.MaxHu.Value,
+                entity.StandardDeviation.Value,
+                entity.VoxelCount.Value).Value;
+        }
+
         var snapshot = new MedicalStudySnapshot(
             entity.Id,
             entity.UploadDate,
             entity.FileName,
             entity.ContentType,
             entity.FileSizeBytes,
-            entity.StorageKey
+            entity.StorageKey,
+            (ExtractionStatus)entity.ExtractionStatus,
+            entity.ExtractionStartedAt,
+            entity.ExtractionCompletedAt,
+            huStatistics,
+            entity.ExtractionError
         );
 
         return MedicalStudy.FromSnapshot(snapshot);

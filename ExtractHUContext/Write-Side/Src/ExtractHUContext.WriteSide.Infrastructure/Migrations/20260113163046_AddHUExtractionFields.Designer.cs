@@ -3,6 +3,7 @@ using System;
 using ExtractHUContext.WriteSide.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ExtractHUContext.WriteSide.Infrastructure.Migrations
 {
     [DbContext(typeof(QuantumHUDbContext))]
-    partial class QuantumHUDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260113163046_AddHUExtractionFields")]
+    partial class AddHUExtractionFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

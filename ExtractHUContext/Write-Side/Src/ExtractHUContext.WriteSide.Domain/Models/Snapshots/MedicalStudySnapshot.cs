@@ -1,3 +1,5 @@
+using ExtractHUContext.WriteSide.Domain.Models.ValueObjects;
+
 namespace ExtractHUContext.WriteSide.Domain.Models.Snapshots;
 
 public record MedicalStudySnapshot(
@@ -6,5 +8,10 @@ public record MedicalStudySnapshot(
     string FileName,
     string ContentType,
     long FileSizeBytes,
-    string StorageKey
+    string StorageKey,
+    ExtractionStatus ExtractionStatus,
+    DateTime? ExtractionStartedAt,
+    DateTime? ExtractionCompletedAt,
+    HuStatistics? HuStatistics,
+    string? ExtractionError
 );

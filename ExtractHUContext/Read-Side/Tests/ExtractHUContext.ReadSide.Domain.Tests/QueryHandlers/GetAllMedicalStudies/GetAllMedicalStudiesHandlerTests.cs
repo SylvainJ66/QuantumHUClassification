@@ -9,18 +9,18 @@ namespace ExtractHUContext.ReadSide.Domain.Tests.QueryHandlers.GetAllMedicalStud
 public class GetAllMedicalStudiesHandlerTests
 {
     private readonly GetAllMedicalStudiesQueryStub _queryStub;
-    private readonly GetAllMedicalStudiesQuery _query;
+    private readonly GetAllMedicalStudiesQuery _queryImplem;
 
     public GetAllMedicalStudiesHandlerTests()
     {
         _queryStub = new GetAllMedicalStudiesQueryStub();
-        _query = new GetAllMedicalStudiesQuery();
+        _queryImplem = new GetAllMedicalStudiesQuery();
     }
 
     [Fact]
     public async Task Handle_WithNoStudies_ShouldReturnEmptyList()
     {
-        var result = await GetAllMedicalStudiesHandler.Handle(_query, _queryStub);
+        var result = await GetAllMedicalStudiesHandler.Handle(_queryImplem, _queryStub);
 
         result.Should().NotBeNull();
         result.Should().BeEmpty();
@@ -41,7 +41,7 @@ public class GetAllMedicalStudiesHandlerTests
         );
         _queryStub.AddStudy(study);
 
-        var result = await GetAllMedicalStudiesHandler.Handle(_query, _queryStub);
+        var result = await GetAllMedicalStudiesHandler.Handle(_queryImplem, _queryStub);
 
         result.Should().HaveCount(1);
         var returnedStudy = result.First();
@@ -67,7 +67,7 @@ public class GetAllMedicalStudiesHandlerTests
         // Add in random order to verify sorting
         _queryStub.AddStudies(new[] { middleStudy, oldStudy, newStudy });
 
-        var result = await GetAllMedicalStudiesHandler.Handle(_query, _queryStub);
+        var result = await GetAllMedicalStudiesHandler.Handle(_queryImplem, _queryStub);
 
         // Verify all studies returned
         result.Should().HaveCount(3);

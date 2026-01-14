@@ -29,5 +29,33 @@ public class MedicalStudyConfiguration : IEntityTypeConfiguration<MedicalStudyEf
         builder.Property(s => s.StorageKey)
             .IsRequired()
             .HasMaxLength(500);
+
+        builder.Property(s => s.ExtractionStatus)
+            .IsRequired();
+
+        builder.Property(s => s.ExtractionStartedAt)
+            .IsRequired(false);
+
+        builder.Property(s => s.ExtractionCompletedAt)
+            .IsRequired(false);
+
+        builder.Property(s => s.MeanHu)
+            .IsRequired(false);
+
+        builder.Property(s => s.MinHu)
+            .IsRequired(false);
+
+        builder.Property(s => s.MaxHu)
+            .IsRequired(false);
+
+        builder.Property(s => s.StandardDeviation)
+            .IsRequired(false);
+
+        builder.Property(s => s.VoxelCount)
+            .IsRequired(false);
+
+        builder.Property(s => s.ExtractionError)
+            .IsRequired(false)
+            .HasMaxLength(2000);
     }
 }

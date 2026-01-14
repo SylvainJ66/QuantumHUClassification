@@ -1,4 +1,5 @@
 using ExtractHUContext.WriteSide.Domain.Models;
+using ExtractHUContext.WriteSide.Domain.Models.ValueObjects;
 using ExtractHUContext.WriteSide.Infrastructure.Persistence.Repositories;
 using ExtractHUContext.WriteSide.Infrastructure.Tests.Fixtures;
 using FluentAssertions;
@@ -35,7 +36,7 @@ public class EfMedicalStudyRepositoryTests : IClassFixture<DatabaseFixture>
         var savedStudy = await repository.GetById(study.ToSnapshot().Id);
 
         savedStudy.Should().NotBeNull();
-        var snapshot = savedStudy!.ToSnapshot();
+        var snapshot = savedStudy.ToSnapshot();
         snapshot.FileName.Should().Be("test-study.zip");
         snapshot.ContentType.Should().Be("application/zip");
         snapshot.FileSizeBytes.Should().Be(1024 * 1024);
@@ -63,7 +64,7 @@ public class EfMedicalStudyRepositoryTests : IClassFixture<DatabaseFixture>
         var retrievedStudy = await repository.GetById(studyId);
 
         retrievedStudy.Should().NotBeNull();
-        var snapshot = retrievedStudy!.ToSnapshot();
+        var snapshot = retrievedStudy.ToSnapshot();
         snapshot.Id.Should().Be(studyId);
         snapshot.FileName.Should().Be("existing-study.zip");
         snapshot.ContentType.Should().Be("application/zip");
@@ -115,7 +116,7 @@ public class EfMedicalStudyRepositoryTests : IClassFixture<DatabaseFixture>
         var retrievedStudy = await repository.GetById(studyId);
 
         retrievedStudy.Should().NotBeNull();
-        var snapshot = retrievedStudy!.ToSnapshot();
+        var snapshot = retrievedStudy.ToSnapshot();
         snapshot.FileName.Should().Be("updated.zip");
         snapshot.ContentType.Should().Be("application/x-zip-compressed");
         snapshot.FileSizeBytes.Should().Be(2048);
@@ -154,8 +155,8 @@ public class EfMedicalStudyRepositoryTests : IClassFixture<DatabaseFixture>
 
         retrievedStudy1.Should().NotBeNull();
         retrievedStudy2.Should().NotBeNull();
-        retrievedStudy1!.ToSnapshot().FileName.Should().Be("study1.zip");
-        retrievedStudy2!.ToSnapshot().FileName.Should().Be("study2.zip");
+        retrievedStudy1.ToSnapshot().FileName.Should().Be("study1.zip");
+        retrievedStudy2.ToSnapshot().FileName.Should().Be("study2.zip");
     }
 
     [Fact]
@@ -179,7 +180,7 @@ public class EfMedicalStudyRepositoryTests : IClassFixture<DatabaseFixture>
         var retrievedStudy = await repository.GetById(study.ToSnapshot().Id);
 
         retrievedStudy.Should().NotBeNull();
-        retrievedStudy!.ToSnapshot().FileName.Should().Be(fileName);
+        retrievedStudy.ToSnapshot().FileName.Should().Be(fileName);
     }
 
     [Fact]
@@ -203,7 +204,88 @@ public class EfMedicalStudyRepositoryTests : IClassFixture<DatabaseFixture>
         var retrievedStudy = await repository.GetById(study.ToSnapshot().Id);
 
         retrievedStudy.Should().NotBeNull();
-        retrievedStudy!.ToSnapshot().FileSizeBytes.Should().Be(largeFileSize);
+        retrievedStudy.ToSnapshot().FileSizeBytes.Should().Be(largeFileSize);
+    }
+
+    [Fact]
+    public async Task Save_WithCompleteExtractionLifecycle_ShouldPersistAllExtractionStates()
+    {
+        await using var context = _databaseFixture.CreateDbContext();
+        var repository = new EfMedicalStudyRepository(context);
+        var uploadDateTime = new DateTime(2026, 1, 13, 10, 0, 0, DateTimeKind.Utc);
+        var startDateTime = new DateTime(2026, 1, 13, 10, 5, 0, DateTimeKind.Utc);
+        var completedDateTime = new DateTime(2026, 1, 13, 10, 10, 0, DateTimeKind.Utc);
+
+        var studyId = Guid.NewGuid();
+        var study = MedicalStudy.Create(
+            studyId,
+            "ct-scan.zip",
+            "application/zip",
+            10 * 1024 * 1024,
+            $"studies/{studyId}/ct-scan.zip",
+            new FixedDateTimeProvider(uploadDateTime)).Value;
+
+        await repository.Save(study);
+
+        var uploadedStudy = await repository.GetById(studyId);
+        uploadedStudy!.ToSnapshot().ExtractionStatus.Should().Be(ExtractionStatus.Pending);
+
+        study.StartExtraction(new FixedDateTimeProvider(startDateTime));
+        await repository.Save(study);
+
+        var inProgressStudy = await repository.GetById(studyId);
+        var inProgressSnapshot = inProgressStudy!.ToSnapshot();
+        inProgressSnapshot.ExtractionStatus.Should().Be(ExtractionStatus.InProgress);
+        inProgressSnapshot.ExtractionStartedAt.Should().Be(startDateTime);
+        inProgressSnapshot.ExtractionCompletedAt.Should().BeNull();
+        inProgressSnapshot.HuStatistics.Should().BeNull();
+
+        var huStats = HuStatistics.Create(45.5, -1000.0, 3000.0, 125.3, 262144).Value;
+        study.CompleteExtraction(huStats, new FixedDateTimeProvider(completedDateTime));
+        await repository.Save(study);
+
+        var completedStudy = await repository.GetById(studyId);
+        var completedSnapshot = completedStudy!.ToSnapshot();
+        completedSnapshot.ExtractionStatus.Should().Be(ExtractionStatus.Completed);
+        completedSnapshot.ExtractionStartedAt.Should().Be(startDateTime);
+        completedSnapshot.ExtractionCompletedAt.Should().Be(completedDateTime);
+        completedSnapshot.HuStatistics.Should().NotBeNull();
+        completedSnapshot.HuStatistics!.MeanHu.Should().Be(45.5);
+        completedSnapshot.HuStatistics.MinHu.Should().Be(-1000.0);
+        completedSnapshot.HuStatistics.MaxHu.Should().Be(3000.0);
+        completedSnapshot.HuStatistics.StandardDeviation.Should().Be(125.3);
+        completedSnapshot.HuStatistics.VoxelCount.Should().Be(262144);
+        completedSnapshot.ExtractionError.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Save_WithFailedExtraction_ShouldPersistErrorMessage()
+    {
+        await using var context = _databaseFixture.CreateDbContext();
+        var repository = new EfMedicalStudyRepository(context);
+        var uploadDateTime = new DateTime(2026, 1, 13, 10, 0, 0, DateTimeKind.Utc);
+        var failedDateTime = new DateTime(2026, 1, 13, 10, 5, 0, DateTimeKind.Utc);
+
+        var studyId = Guid.NewGuid();
+        var study = MedicalStudy.Create(
+            studyId,
+            "invalid-dicom.zip",
+            "application/zip",
+            1024,
+            $"studies/{studyId}/invalid.zip",
+            new FixedDateTimeProvider(uploadDateTime)).Value;
+
+        study.StartExtraction(new FixedDateTimeProvider(uploadDateTime));
+        study.FailExtraction("Invalid DICOM file format", new FixedDateTimeProvider(failedDateTime));
+
+        await repository.Save(study);
+
+        var failedStudy = await repository.GetById(studyId);
+        var failedSnapshot = failedStudy!.ToSnapshot();
+        failedSnapshot.ExtractionStatus.Should().Be(ExtractionStatus.Failed);
+        failedSnapshot.ExtractionCompletedAt.Should().Be(failedDateTime);
+        failedSnapshot.HuStatistics.Should().BeNull();
+        failedSnapshot.ExtractionError.Should().Be("Invalid DICOM file format");
     }
 
     private class FixedDateTimeProvider : IDateTimeProvider
